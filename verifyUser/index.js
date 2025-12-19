@@ -1,13 +1,14 @@
 const {
   SlashCommandBuilder,
-  PermissionFlagsBits
+  PermissionFlagsBits,
+  MessageFlags
 } = require('discord.js');
 require("dotenv").config();
 
 
 const roles = {
     male: {
-        verifier: "",
+        verifier: "1451328987337855069",
         addRoles: [
             "1447620285997125722", // verified
             "1447668061569024050"], // male
@@ -15,7 +16,7 @@ const roles = {
         welcomeChannelID: "1422705265215803472"
     },
     female: {
-        verifier: "",
+        verifier: "1451329048117641257",
         addRoles: [
             "1447620285997125722", // verified
             "1447668127495356526"], // female
@@ -45,7 +46,8 @@ const verifyUserData = new SlashCommandBuilder()
             )
     );
 
-const verifyUser = async (client, interaction) => {
+const verifyUser = async (interaction) => {
+    console.log("verifyUser command invoked");
     const targetUser = interaction.options.getUser("userid");
     let gender = interaction.options.getString("gender");
 
@@ -56,7 +58,7 @@ const verifyUser = async (client, interaction) => {
     const femaleVerifier = staffer.roles.cache.has(roles.female.verifier);
 
     if (!isAdmin && !maleVerifier && !femaleVerifier) {
-        return interaction.reply({ content: "❌ You do not have permission to use this command.", ephemeral: true });
+        return interaction.reply({ content: "❌ You do not have permission to use this command.", flags: MessageFlags.Ephemeral });
     }
 
     if (!gender)
@@ -67,33 +69,35 @@ const verifyUser = async (client, interaction) => {
                 : null; // has both roles
 
     if(!gender) { // has both roles or is just an Admin/Owner
-        return interaction.reply({ content: "❌ Please specify a gender.", ephemeral: true });
+        return interaction.reply({ content: "❌ Please specify a gender.", flags: MessageFlags.Ephemeral });
     }
+
+    await interaction.reply({content: "Processing verification...", flags: MessageFlags.Ephemeral});
 
     const targetMember = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
     if (!targetMember) {
-        return interaction.reply({ content: "❌ User not found in this guild.", ephemeral: true });
+        return interaction.editReply({ content: "❌ User not found in this guild.", flags: MessageFlags.Ephemeral });
     }
     const specificRules = roles[gender];
 
     // Assign roles
     await targetMember.roles.add(specificRules.addRoles);
     await targetMember.roles.remove(specificRules.removeRoles);
-
+    
     // Send welcome message
     const welcomeChannel = interaction.guild.channels.cache.get(specificRules.welcomeChannelID);
     if (welcomeChannel) {
         try {
-            await welcomeChannel.send(`Welcome <@${targetMember.id}> to the server! 🎉`);
+            await welcomeChannel.send(`Assalamu alaikum wa rahmatullahi wa barakatuh <@${targetMember.id}>!`);
+            interaction.editReply({ content: `✅ Successfully verified <@${targetMember.id}>`, flags: MessageFlags.Ephemeral });
         } catch (err) {
             console.warn("Failed to send welcome message:", err);
-            interaction.reply({ content: "❌ Failed to send welcome message.", ephemeral: true });
+            interaction.editReply({ content: "❌ Failed to send welcome message.", flags: MessageFlags.Ephemeral });
         }
     } else {
         console.warn(`Welcome channel with ID ${specificRules.welcomeChannelID} not found.`);
-        interaction.reply({ content: "❌ Welcome channel not found.", ephemeral: true });
+        interaction.editReply({ content: "❌ Welcome channel not found.", flags: MessageFlags.Ephemeral });
     }
-    return interaction.reply({ content: `✅ Successfully verified <@${targetMember.id}>`, ephemeral: true });
 }
 
 module.exports = { verifyUser, verifyUserData };

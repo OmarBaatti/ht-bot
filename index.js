@@ -46,9 +46,10 @@ client.once(Events.ClientReady, () => {
 
 
 client.commands = new Collection();
-client.commands.set("verifyUser", { execute: verifyUser });
+client.commands.set("verifyuser", { execute: verifyUser });
 
 client.on(Events.InteractionCreate, async (interaction) => {
+  console.log("Interaction created");
   if (!interaction.isChatInputCommand()) return;
   const command = client.commands.get(interaction.commandName);
   if (!command) return;
