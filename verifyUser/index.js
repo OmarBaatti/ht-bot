@@ -47,6 +47,10 @@ const verifyUserData = new SlashCommandBuilder()
     );
 
 const verifyUser = async (interaction) => {
+
+    if (!interaction.guild || !interaction.member){
+        return interaction.reply({ content: "Cant find the server or the staffer.\nSTOP using me in dms >:( .", flags: MessageFlags.Ephemeral });
+    }
     const targetUser = interaction.options.getUser("userid");
     let gender = interaction.options.getString("gender");
 
