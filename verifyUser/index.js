@@ -47,9 +47,12 @@ const verifyUserData = new SlashCommandBuilder()
     );
 
 const verifyUser = async (interaction) => {
-    console.log("verifyUser command invoked");
     const targetUser = interaction.options.getUser("userid");
     let gender = interaction.options.getString("gender");
+
+    console.log(
+        `VerifyUser: processing ${gender} verification by ${interaction.user.tag} (${interaction.user.id}) to ${targetUser.tag} (${targetUser.id})`
+    );
 
     const staffer = interaction.member;
     const isAdmin = staffer.permissions.has(PermissionFlagsBits.Administrator) || staffer.id === interaction.guild.ownerId;
